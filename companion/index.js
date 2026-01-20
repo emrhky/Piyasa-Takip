@@ -2,55 +2,34 @@ import * as messaging from "messaging";
 
 const API_URL = "https://finans.truncgil.com/today.json";
 
-// Mesaj kuyruğu (Bağlantı hazır değilse burada bekleteceğiz)
-let msgQueue = [];
-
-// 1. Cihazdan mesaj gelince
 messaging.peerSocket.onmessage = function(evt) {
-  console.log("Companion: Cihazdan komut geldi -> " + JSON.stringify(evt.data));
   if (evt.data && evt.data.command === "update") {
+    console.log("Companion: Güncelleme isteği alındı, API'ye gidiliyor...");
     fetchMarkets();
   }
 }
 
-// 2. Bağlantı açılınca kuyruktaki mesajları yolla
-messaging.peerSocket.onopen = function() {
-  console.log("Companion: Socket AÇIK, kuyruk işleniyor...");
-  while (msgQueue.length > 0) {
-    let msg = msgQueue.shift();
-    sendToDevice(msg);
-  }
-}
-
-messaging.peerSocket.onerror = function(err) {
-  console.log("Companion: Socket Hatası -> " + err.code + " " + err.message);
-}
-
 function fetchMarkets() {
-  console.log("Companion: API isteği gönderiliyor...");
-  
   fetch(API_URL)
   .then(response => {
-    // Yanıt durumunu logla
-    console.log("Companion: API Sunucu Durumu -> " + response.status);
     if (!response.ok) {
-      throw new Error("Sunucu Yanıt Vermedi: " + response.status);
+      throw new Error("API Hatası Kod: " + response.status);
     }
     return response.json();
   })
   .then(data => {
-    // GELEN VERİYİ GÖRMEK İÇİN LOGLUYORUZ
-    // (Burası hatanın sebebini anlamamızı sağlayacak)
-    // console.log("Gelen Ham Veri: " + JSON.stringify(data)); 
+    // 1. Veri geldi mi diye konsola basalım (Loglarda bunu görmelisin)
+    console.log("Companion: API Yanıtı Başarılı. Veri işleniyor...");
 
-    // Veri güvenliği kontrolü
-    // Eğer API yapısı değişmişse burada yakalarız.
-    let usd = safeGet(data, "ABD DOLARI");
-    let eur = safeGet(data, "EURO");
-    let gold = safeGet(data, "GRAM ALTIN");
-    let silver = safeGet(data, "GÜMÜŞ");
+    // 2. Güvenli ayrıştırma ve Virgül/Nokta düzeltme
+    let usd = parseCurrency(data, "ABD DOLARI");
+    let eur = parseCurrency(data, "EURO");
+    let gold = parseCurrency(data, "GRAM ALTIN");
+    
+    // Gümüş bazen "GÜMÜŞ", bazen gelmiyor. Kontrollü alalım.
+    let silver = parseCurrency(data, "GÜMÜŞ"); 
 
-    let packet = {
+    let marketData = {
       success: true,
       usd: usd,
       eur: eur,
@@ -58,32 +37,39 @@ function fetchMarkets() {
       silver: silver
     };
 
-    console.log("Companion: Veri paketlendi, saate gönderiliyor...");
-    sendToDevice(packet);
+    console.log("Companion: Gönderilen Veri -> " + JSON.stringify(marketData));
+    sendToDevice(marketData);
   })
   .catch(err => {
-    console.error("Companion Fetch Hatası: " + err);
-    sendToDevice({
-      success: false,
-      error: "İnternet/API Yok"
-    });
+    console.error("Companion Hatası: " + err);
+    sendToDevice({ success: false, error: "Veri Alınamadı" });
   });
 }
 
-// Güvenli veri okuma fonksiyonu (Hata patlamasını önler)
-function safeGet(data, key) {
-  if (data && data[key] && data[key].Satis) {
-    return data[key].Satis;
+// Yardımcı Fonksiyon: Veriyi temizler ve sayıya çevirir
+function parseCurrency(data, key) {
+  // Veri yoksa veya key yanlışsa
+  if (!data || !data[key]) {
+    console.log("Uyarı: " + key + " verisi API'de bulunamadı.");
+    return "0.00";
   }
-  return "0.00"; // Veri yoksa 0.00 dönsün
+
+  let priceStr = data[key].Satis; // Örn: "30,2500"
+  
+  if (!priceStr) return "0.00";
+
+  // Virgülü noktaya çevir (JavaScript için zorunlu)
+  priceStr = priceStr.replace(",", ".");
+  
+  // Sayıya çevirip 2 basamak formatla, sonra tekrar string yap
+  let priceVal = parseFloat(priceStr);
+  return priceVal.toFixed(2); // Örn: "30.25"
 }
 
 function sendToDevice(data) {
   if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
     messaging.peerSocket.send(data);
-    console.log("Companion: Veri yollandı.");
   } else {
-    console.log("Companion: Socket KAPALI, mesaj kuyruğa eklendi.");
-    msgQueue.push(data);
+    console.log("Companion: Bağlantı kopuk, veri gönderilemedi.");
   }
 }
