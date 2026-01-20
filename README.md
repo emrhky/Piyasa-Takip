@@ -1,1 +1,1 @@
-# Piyasa-Takip
+# Piyasa-Takip.
