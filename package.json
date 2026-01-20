@@ -1,0 +1,12 @@
+{
+  "appType": "app",
+  "appDisplayName": "Piyasa Takip",
+  "appUUID": "51a37651-6893-4704-9580-776263546743",
+  "iconFile": "resources/icon.png",
+  "buildTargets": [
+    "higgs"
+  ],
+  "requestedPermissions": [
+    "access_internet"
+  ]
+}
