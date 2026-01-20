@@ -1,0 +1,25 @@
+<svg>
+  <rect width="100%" height="100%" fill="black" />
+  
+  <text x="50%" y="35" font-family="System-Regular" fill="white" 
+        font-size="24" font-weight="bold" text-anchor="middle">SERBEST PİYASA</text>
+  
+  <line x1="10%" y1="45" x2="90%" y2="45" fill="#333333" stroke-width="2" />
+
+  <text id="labelUSD" x="50%" y="90" font-family="System-Regular" fill="#85bb65" 
+        font-size="36" text-anchor="middle" font-weight="bold">USD: --.--</text>
+  
+  <text id="labelEUR" x="50%" y="140" font-family="System-Regular" fill="#3b99d9" 
+        font-size="36" text-anchor="middle" font-weight="bold">EUR: --.--</text>
+  
+  <text id="labelGOLD" x="50%" y="190" font-family="System-Regular" fill="#ffd700" 
+        font-size="36" text-anchor="middle" font-weight="bold">ALTIN: ----</text>
+  
+  <text id="labelSILVER" x="50%" y="240" font-family="System-Regular" fill="#c0c0c0" 
+        font-size="36" text-anchor="middle" font-weight="bold">GÜMÜŞ: --.--</text>
+
+  <text id="statusText" x="50%" y="280" font-family="System-Regular" fill="#555555" 
+        font-size="18" text-anchor="middle">Ekrana dokun...</text>
+  
+  <rect id="btnRefresh" x="0" y="0" width="100%" height="100%" opacity="0" pointer-events="visible" />
+</svg>
