@@ -11,16 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Kodları çek (v4 sürümüne güncellendi)
+    # 1. Kodları çek
     - name: Depoyu Çek (Checkout)
       uses: actions/checkout@v4
 
-    # 2. Node.js Kurulumu (v4 sürümüne güncellendi)
+    # 2. Node.js Kurulumu
     - name: Node.js Kur
       uses: actions/setup-node@v4
       with:
-        node-version: '18' # Node 18, Fitbit SDK 6+ için daha stabil
-        cache: 'npm'
+        node-version: '18'
+        # cache: 'npm' satırını BURADAN SİLDİM.
+        # package-lock.json dosyası olmadığı için hata veriyordu.
 
     # 3. Paketleri Yükle
     - name: Bağımlılıkları Yükle (npm install)
@@ -31,12 +32,9 @@ jobs:
       run: npx fitbit-build
 
     # 5. Oluşan .fba Dosyasını Yükle (Artifact)
-    # HATA ÇÖZÜMÜ: v3 yerine v4 kullanıldı.
     - name: .fba Dosyasını Yükle
       uses: actions/upload-artifact@v4
       with:
         name: finans-takip-uygulamasi
         path: build/*.fba
         retention-days: 5
-        # v4 ile gelen güvenlik ayarı, aynı isimde dosya varsa üzerine yazmaz,
-        # her build benzersiz olsun diye false bırakıyoruz veya siliyoruz.
