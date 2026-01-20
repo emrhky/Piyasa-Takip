@@ -1,0 +1,43 @@
+name: Fitbit Build CI
+
+# Bu akış ne zaman çalışsın?
+# main veya master dalına her push yapıldığında tetiklenir.
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Kodları çek (Checkout)
+    - name: Depoyu Çek (Checkout)
+      uses: actions/checkout@v3
+
+    # 2. Node.js Kurulumu (Fitbit SDK için Node 16 veya 18 idealdir)
+    - name: Node.js Kur
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'npm'
+
+    # 3. Paketleri Yükle
+    - name: Bağımlılıkları Yükle (npm install)
+      run: npm install
+
+    # 4. Projeyi Derle (Build)
+    # package.json içindeki ayarlara göre build/ klasörüne .fba dosyası oluşturur.
+    - name: Fitbit Build
+      run: npx fitbit-build
+
+    # 5. Oluşan .fba Dosyasını Yükle (Artifact)
+    # İşlem bitince GitHub sayfasından indirebilmen için dosyayı saklar.
+    - name: .fba Dosyasını Yükle
+      uses: actions/upload-artifact@v3
+      with:
+        name: finans-takip-uygulamasi
+        path: build/*.fba
+        retention-days: 5
