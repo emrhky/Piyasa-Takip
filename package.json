@@ -8,7 +8,7 @@
     "@fitbit/sdk-cli": "~1.8.0-pre.10"
   },
   "fitbit": {
-    "appUUID": "a1b2c3d4-e5f6-4789-0123-abcdef123456",
+    "appUUID": "3a458260-26c7-43c3-9382-77764726b2d1",
     "appType": "app",
     "appDisplayName": "Piyasa Takip",
     "iconFile": "resources/icon.png",
