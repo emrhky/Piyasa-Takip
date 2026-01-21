@@ -8,47 +8,54 @@ const labelSILVER = document.getElementById("labelSILVER");
 const statusText = document.getElementById("statusText");
 const btnRefresh = document.getElementById("btnRefresh");
 
-// İlk açılış
-statusText.text = "Bekleniyor...";
+// Başlangıç durumu
+statusText.text = "Başlatılıyor...";
 
-// Mesaj Alımı
+// 1. Companion'dan mesaj geldiğinde
 messaging.peerSocket.onmessage = function(evt) {
-  console.log("Cihaz: Veri paketi geldi.");
-  
   if (evt.data) {
-    if(evt.data.success) {
+    if (evt.data.success) {
+      // Veri başarılı geldi
       updateUI(evt.data);
     } else {
+      // Companion hata mesajı yolladı
       statusText.text = evt.data.error || "Hata";
       statusText.style.fill = "red";
     }
   }
 }
 
+// 2. Bağlantı açıldığında
 messaging.peerSocket.onopen = function() {
-  statusText.text = "Bağlandı.";
-  fetchData(); // Bağlanınca hemen iste
+  statusText.text = "Veri İsteniyor...";
+  statusText.style.fill = "#555555";
+  requestData();
 }
 
-messaging.peerSocket.onerror = function() {
+// 3. Bağlantı hatası
+messaging.peerSocket.onerror = function(err) {
   statusText.text = "BT Hatası";
+  statusText.style.fill = "red";
 }
 
+// Butona tıklayınca
 btnRefresh.onclick = function() {
   statusText.text = "Yenileniyor...";
-  fetchData();
+  requestData();
 }
 
-function fetchData() {
+// Veri İsteme Fonksiyonu
+function requestData() {
   if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
     messaging.peerSocket.send({ command: "update" });
   } else {
     statusText.text = "Telefona Bağlan...";
+    statusText.style.fill = "orange";
   }
 }
 
+// Arayüzü Güncelle
 function updateUI(data) {
-  // Gelen veri zaten string ve düzeltilmiş olduğu için direkt basıyoruz
   labelUSD.text = `USD: ${data.usd}`;
   labelEUR.text = `EUR: ${data.eur}`;
   labelGOLD.text = `GR: ${data.gold}`;
@@ -57,5 +64,10 @@ function updateUI(data) {
   let d = new Date();
   let timeStr = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
   statusText.text = "Son: " + timeStr;
-  statusText.style.fill = "#555555";
+  statusText.style.fill = "#00FF00"; // Güncel olduğunu göstermek için yeşilimsi
 }
+
+// --- GÜVENLİK MEKANİZMASI ---
+// Uygulama ilk açıldığında bağlantı hemen hazır olmayabilir.
+// Bu yüzden 2 saniye sonra bir kere zorluyoruz.
+setTimeout(requestData, 2000);
