@@ -4,7 +4,6 @@ const API_URL = "https://finans.truncgil.com/today.json";
 
 messaging.peerSocket.onmessage = function(evt) {
   if (evt.data && evt.data.command === "update") {
-    console.log("Companion: Güncelleme isteği alındı, API'ye gidiliyor...");
     fetchMarkets();
   }
 }
@@ -13,23 +12,19 @@ function fetchMarkets() {
   fetch(API_URL)
   .then(response => {
     if (!response.ok) {
-      throw new Error("API Hatası Kod: " + response.status);
+      throw new Error("Sunucu Hatası");
     }
     return response.json();
   })
   .then(data => {
-    // 1. Veri geldi mi diye konsola basalım (Loglarda bunu görmelisin)
-    console.log("Companion: API Yanıtı Başarılı. Veri işleniyor...");
+    // İSTEĞİN ÜZERİNE 'Alis' VERİSİ KULLANILIYOR
+    // Veri güvenliği: Veri yoksa "0" döner.
+    let usd = parsePrice(data, "ABD DOLARI");
+    let eur = parsePrice(data, "EURO");
+    let gold = parsePrice(data, "GRAM ALTIN");
+    let silver = parsePrice(data, "GÜMÜŞ");
 
-    // 2. Güvenli ayrıştırma ve Virgül/Nokta düzeltme
-    let usd = parseCurrency(data, "ABD DOLARI");
-    let eur = parseCurrency(data, "EURO");
-    let gold = parseCurrency(data, "GRAM ALTIN");
-    
-    // Gümüş bazen "GÜMÜŞ", bazen gelmiyor. Kontrollü alalım.
-    let silver = parseCurrency(data, "GÜMÜŞ"); 
-
-    let marketData = {
+    let packet = {
       success: true,
       usd: usd,
       eur: eur,
@@ -37,39 +32,28 @@ function fetchMarkets() {
       silver: silver
     };
 
-    console.log("Companion: Gönderilen Veri -> " + JSON.stringify(marketData));
-    sendToDevice(marketData);
+    sendToDevice(packet);
   })
   .catch(err => {
-    console.error("Companion Hatası: " + err);
-    sendToDevice({ success: false, error: "Veri Alınamadı" });
+    console.error("Hata: " + err);
+    sendToDevice({ success: false, error: "Veri Yok" });
   });
 }
 
-// Yardımcı Fonksiyon: Veriyi temizler ve sayıya çevirir
-function parseCurrency(data, key) {
-  // Veri yoksa veya key yanlışsa
-  if (!data || !data[key]) {
-    console.log("Uyarı: " + key + " verisi API'de bulunamadı.");
-    return "0.00";
+function parsePrice(data, key) {
+  if (data && data[key] && data[key].Alis) {
+    // Virgülü noktaya çevirip sadece string olarak döndürüyoruz
+    // Ekrana sığması için uzun küsuratları kırpıyoruz (örn: 34.12)
+    let val = data[key].Alis.replace(",", ".");
+    let num = parseFloat(val);
+    if(isNaN(num)) return "0.00";
+    return num.toFixed(2); // Sadece virgülden sonra 2 basamak
   }
-
-  let priceStr = data[key].Satis; // Örn: "30,2500"
-  
-  if (!priceStr) return "0.00";
-
-  // Virgülü noktaya çevir (JavaScript için zorunlu)
-  priceStr = priceStr.replace(",", ".");
-  
-  // Sayıya çevirip 2 basamak formatla, sonra tekrar string yap
-  let priceVal = parseFloat(priceStr);
-  return priceVal.toFixed(2); // Örn: "30.25"
+  return "0.00";
 }
 
 function sendToDevice(data) {
   if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
     messaging.peerSocket.send(data);
-  } else {
-    console.log("Companion: Bağlantı kopuk, veri gönderilemedi.");
   }
 }
