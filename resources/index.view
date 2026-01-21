@@ -6,20 +6,20 @@
   
   <line x1="10%" y1="40" x2="90%" y2="40" fill="#333333" stroke-width="1" />
 
-  <text id="labelUSD" x="50%" y="85" font-family="System-Regular" fill="#85bb65" 
+  <text id="TXT_USD" x="50%" y="85" font-family="System-Regular" fill="#85bb65" 
         font-size="32" text-anchor="middle" font-weight="bold">USD: --.--</text>
   
-  <text id="labelEUR" x="50%" y="135" font-family="System-Regular" fill="#3b99d9" 
+  <text id="TXT_EUR" x="50%" y="135" font-family="System-Regular" fill="#3b99d9" 
         font-size="32" text-anchor="middle" font-weight="bold">EUR: --.--</text>
   
-  <text id="labelGOLD" x="50%" y="185" font-family="System-Regular" fill="#ffd700" 
+  <text id="TXT_GOLD" x="50%" y="185" font-family="System-Regular" fill="#ffd700" 
         font-size="32" text-anchor="middle" font-weight="bold">ALTIN: ----</text>
   
-  <text id="labelSILVER" x="50%" y="235" font-family="System-Regular" fill="#c0c0c0" 
+  <text id="TXT_SILVER" x="50%" y="235" font-family="System-Regular" fill="#c0c0c0" 
         font-size="32" text-anchor="middle" font-weight="bold">GÜMÜŞ: --.--</text>
 
-  <text id="statusText" x="50%" y="280" font-family="System-Regular" fill="#555555" 
-        font-size="16" text-anchor="middle">Dokun ve Yenile</text>
+  <text id="TXT_STATUS" x="50%" y="280" font-family="System-Regular" fill="yellow" 
+        font-size="16" text-anchor="middle">Yazılım Yükleniyor...</text>
   
-  <rect id="btnRefresh" x="0" y="0" width="100%" height="100%" opacity="0" pointer-events="visible" />
+  <rect id="BTN_REFRESH" x="0" y="0" width="100%" height="100%" opacity="0" pointer-events="visible" />
 </svg>
